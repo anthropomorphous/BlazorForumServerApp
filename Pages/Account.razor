@@ -1,0 +1,57 @@
+﻿@page "/account"
+
+<div>
+    <style>
+        h3{
+            color: white;
+        }
+        a.main{
+            color: white; 
+            text-indent: 100px; 
+            font-size: large;
+        }
+        p.main{
+            font-size:large;
+            color: white;
+            text-indent: 100px;
+        }
+        img{
+            border-radius: 50%;
+            height: 80px;
+            width: 80px;
+        }
+        
+    </style>
+</div>
+
+<h3>Добро пожаловать, @username!</h3>
+
+<div style="padding: 20px;">
+    
+    <img src=@imgsrc/><a class="main" style="color:white;"> &nbsp &nbspИмя:</a><br />
+    <br />
+    <p class="main">Адрес электронной почты:</p>
+    <br />
+    <p class="main">Мои темы</p>
+    <br />
+    
+    <div class="row align-items-center remember" >
+        <NavLink class="nav-link" href="login">
+            <button class="btn btn-primary">Изменить</button>
+        </NavLink>
+        <NavLink class="nav-link" href="#">
+            <button class="btn btn-primary">Удалить аккаунт</button>
+        </NavLink>
+    </div>
+        
+    
+   
+</div>
+
+@code {
+
+    string username = "Anon";
+
+    string imgsrc = "Images/accountimg.png";
+
+}

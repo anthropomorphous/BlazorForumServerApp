@@ -1,0 +1,43 @@
+﻿@inherits LayoutComponentBase
+
+<div class="sidebar">
+    <NavMenu />
+</div>
+
+<div class="main bg-dark">
+    <style>
+        h1 {
+            color: antiquewhite;
+        }
+
+        .bg-img {
+            /* The image used */
+            background-image: url("Images/bio.jpg");
+            min-height: 800px;
+            /* Center and scale the image nicely */
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            /* Needed to position the navbar */
+            position: relative;
+        }
+
+        /* Position the navbar container inside the image */
+        .container {
+            /*position: absolute;*/
+            margin: 20px;
+            width: auto;
+            border: 3px solid black;
+            padding: 20px;
+        }
+    </style>
+
+    <div class="top-row px-4 auth">
+        <LoginDisplay />
+        <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+    </div>
+
+    <div class="content px-4">
+        @Body
+    </div>
+</div>

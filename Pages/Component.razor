@@ -1,0 +1,22 @@
+﻿@page "/component"
+
+<h1>Message</h1>
+
+<div style="padding: 15px">
+
+    <h2 style="color: antiquewhite; ">Full message: @strt </h2>
+
+    <button class="btn btn-primary" @onclick="ShowMessage">Показать сообщение</button>
+
+</div>
+
+@code {
+
+    string strt = "...";
+
+    void ShowMessage()
+    {
+        strt = "Ееееее биохакинг пацаны!!1!";
+    }
+
+}

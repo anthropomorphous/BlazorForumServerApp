@@ -1,0 +1,36 @@
+﻿@page "/themes"
+
+<h1>Темы</h1>
+
+<div class="alert alert-secondary mt-4" role="alert">
+    <span class="oi oi-sun mr-2" aria-hidden="true"></span>
+    <strong>@Theme</strong>
+
+    <span class="text-nowrap"></span> Tell us what you think (haha, nope).
+</div>
+
+<div class="alert alert-secondary mt-4" role="alert">
+    <span class="oi oi-sun mr-2" aria-hidden="true"></span>
+    <strong>ы</strong>
+
+    <span class="text-nowrap"></span> Tell us what you think (haha, nope).
+</div>
+
+<div class="alert alert-secondary mt-4" role="alert">
+    <span class="oi oi-sun mr-2" aria-hidden="true"></span>
+    <strong>ы</strong>
+
+    <span class="text-nowrap"></span> Tell us what you think (haha, nope).
+    <div class="alert alert-secondary mt-4" role="alert">
+        <span class="oi oi-sun mr-2" aria-hidden="true"></span>
+        <strong>ы</strong>
+
+        <span class="text-nowrap"></span> Tell us what you think (haha, nope).
+    </div>
+</div>
+
+
+@code {
+     // Demonstrates how a parent component can supply parameters
+    [Parameter] public string Theme { get; set; }
+}
