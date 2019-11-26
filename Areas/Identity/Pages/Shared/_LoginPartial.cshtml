@@ -3,25 +3,25 @@
 @inject UserManager<IdentityUser> UserManager
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
-<ul class="navbar-nav bg-dark">
+<ul class="navbar-nav">
 @if (SignInManager.IsSignedIn(User))
 {
-    <li class="nav-item bg-dark">
-        <a  class="nav-link bg-dark text-light" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @User.Identity.Name!</a>
+    <li class="nav-item">
+        <a  class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Добро пожаловать, @User.Identity.Name!</a>
     </li>
-    <li class="nav-item bg-dark">
+    <li class="nav-item">
         <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="/" method="post">
-            <button  type="submit" class="nav-link btn btn-link bg-dark text-light">Logout</button>
+            <button  type="submit" class="nav-link btn btn-link text-dark">Выход</button>
         </form>
     </li>
 }
 else
 {
-    <li class="nav-item bg-dark">
-        <a class="nav-link bg-dark text-light" asp-area="Identity" asp-page="/Account/Register">Register</a>
+    <li class="nav-item">
+        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Регистрация</a>
     </li>
-    <li class="nav-item bg-dark">
-        <a class="nav-link bg-dark text-light" asp-area="Identity" asp-page="/Account/Login">Login</a>
+    <li class="nav-item">
+        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Вход</a>
     </li>
 }
 </ul>
