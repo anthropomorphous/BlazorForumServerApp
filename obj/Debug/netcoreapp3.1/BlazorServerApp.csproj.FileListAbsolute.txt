@@ -83,3 +83,4 @@ D:\all of this\code this code\blazor_asp\BlazorServerApp\obj\Debug\netcoreapp3.1
 D:\all of this\code this code\blazor_asp\BlazorServerApp\obj\Debug\netcoreapp3.1\BlazorServerApp.csproj.CopyComplete
 D:\all of this\code this code\blazor_asp\BlazorServerApp\obj\Debug\netcoreapp3.1\BlazorServerApp.dll
 D:\all of this\code this code\blazor_asp\BlazorServerApp\obj\Debug\netcoreapp3.1\BlazorServerApp.pdb
+D:\all of this\code this code\blazor_asp\BlazorServerApp\bin\Debug\netcoreapp3.1\efpt.config.json

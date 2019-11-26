@@ -39,7 +39,15 @@ namespace BlazorServerApp
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
-            services.AddSingleton<WeatherForecastService>();
+           
+            // Scoped creates an instance for each user
+            services.AddScoped<ThemeTableService>();
+
+            // Read the connection string from the appsettings.json file
+            // Set the database connection for the BlazorServerAppContext
+            services.AddDbContext<BlazorServerAppDB.Data.BlazorServerApp.BlazorserverappContext>(options =>
+            options.UseSqlServer(
+                Configuration.GetConnectionString("DefaultConnection")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
