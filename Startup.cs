@@ -43,6 +43,8 @@ namespace BlazorServerApp
             // Scoped creates an instance for each user
             services.AddScoped<ThemeTableService>();
 
+            services.AddScoped<AllThemesTableService>();
+
             // Read the connection string from the appsettings.json file
             // Set the database connection for the BlazorServerAppContext
             services.AddDbContext<BlazorServerAppDB.Data.BlazorServerApp.BlazorserverappContext>(options =>

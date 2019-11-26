@@ -16,6 +16,7 @@ namespace BlazorServerAppDB.Data.BlazorServerApp
         {
         }
 
+        public virtual DbSet<AllThemesTable> AllThemesTable { get; set; }
         public virtual DbSet<ThemeTable> ThemeTable { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -27,6 +28,15 @@ namespace BlazorServerAppDB.Data.BlazorServerApp
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<AllThemesTable>(entity =>
+            {
+                entity.Property(e => e.Date).HasColumnType("datetime");
+
+                entity.Property(e => e.MessageId).HasColumnName("Message_Id");
+
+                entity.Property(e => e.ThemeId).HasColumnName("Theme_Id");
+            });
+
             modelBuilder.Entity<ThemeTable>(entity =>
             {
                 entity.Property(e => e.Date).HasColumnType("datetime");

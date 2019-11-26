@@ -25,6 +25,18 @@ namespace BlazorServerApp.Data
             return Task.FromResult(colThemeTables);
         }
 
+        public Task<List<ThemeTable>>
+            GetThemesAsync(int CurrentTheme)
+        {
+            List<ThemeTable> colThemeTable =
+                new List<ThemeTable>();
+            // Get Themes  
+            colThemeTable =
+                (from ThemeTable in _context.ThemeTable
+                 select ThemeTable).ToList();
+            return Task.FromResult(colThemeTable);
+        }
+
         public Task<ThemeTable>
         CreateThemeAsync(ThemeTable objThemeTable)
         {

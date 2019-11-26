@@ -1,4 +1,105 @@
 ﻿@page "/themes"
+@using BlazorServerApp.Data
+@using BlazorServerAppDB.Data.BlazorServerApp
+
+@inherits OwningComponentBase<ThemeTableService>
+<h1>Мои темы</h1>
+<!-- AuthorizeView allows us to only show sections of the page -->
+<!-- based on the security on the current user -->
+<AuthorizeView>
+    <!-- Show this section if the user is logged in -->
+    <Authorized>
+        <h4>Hello, @context.User.Identity.Name!</h4>
+        @if (themes == null)
+        {
+            <!-- Show this if the current user has no data... yet... -->
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+            <!-- Show the forecasts for the current user -->
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Дата</th>
+                        <th>Тема</th>
+                        <th>Пользователь</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var theme in themes)
+                    {
+                        <tr>
+                            <td>@theme.Date.Value.ToShortDateString()</td>
+                            <td>@theme.ThemeName</td>
+                            <td>@theme.UserName</td>
+                            <td>
+                                <!-- Edit the current theme -->
+                                <button class="btn btn-primary"
+                                        @onclick="(() => EditTheme(theme))">
+                                    Edit
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <p>
+                <!-- Add a new theme -->
+                <button class="btn btn-primary"
+                        @onclick="AddNewTheme">
+                    Add New Theme
+                </button>
+            </p>
+            @if (ShowPopup)
+            {
+                <!-- This is the popup to create or edit a theme -->
+                <div class="modal" tabindex="-1" style="display:block" role="dialog">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3 class="modal-title">Изменить</h3>
+                                <!-- Button to close the popup -->
+                                <button type="button" class="close"
+                                        @onclick="ClosePopup">
+                                    <span aria-hidden="true">X</span>
+                                </button>
+                            </div>
+                            <!-- Edit form for the current theme -->
+                            <div class="modal-body">
+                                <input class="form-control" type="text"
+                                       placeholder="Тема"
+                                       @bind="objThemeTable.ThemeName" />
+                                <br />
+                                <!-- Button to save the theme -->
+                                <button class="btn btn-primary"
+                                        @onclick="SaveTheme">
+                                    Save
+                                </button>
+
+                                <!-- Only show delete button if not a new record -->
+                                @if (objThemeTable.Id > 0)
+                                {
+                                    <!-- Button to delete the forecast -->
+                                    <button class="btn btn-primary"
+                                            @onclick="DeleteTheme">
+                                        Delete
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+        }
+    </Authorized>
+    <!-- Show this section if the user is not logged in -->
+    <NotAuthorized>
+        <p>You're not signed in.</p>
+    </NotAuthorized>
+</AuthorizeView>
 
 <h1>Темы</h1>
 
@@ -31,6 +132,88 @@
 
 
 @code {
-     // Demonstrates how a parent component can supply parameters
+    // Demonstrates how a parent component can supply parameters
     [Parameter] public string Theme { get; set; }
+
+     // AuthenticationState is available as a CascadingParameter
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    List<ThemeTable> themes;
+    protected override async Task OnInitializedAsync()
+    {
+        // Get the current user
+        var user = (await authenticationStateTask).User;
+        // Get all the themes
+        // We access ThemeTableService using @Service
+        // And pick (probably ok) not only the 4 theme
+        themes = await @Service.GetThemesAsync(4);
+    }
+
+    ThemeTable objThemeTable = new ThemeTable();
+    bool ShowPopup = false;
+    void ClosePopup()
+    {
+        // Close the Popup
+        ShowPopup = false;
+    }
+    void AddNewTheme()
+    {
+        // Make new theme
+        objThemeTable = new ThemeTable();
+        // Set Id to 0 so we know it is a new record
+        objThemeTable.Id = 0;
+        // Open the Popup
+        ShowPopup = true;
+    }
+    async Task SaveTheme()
+    {
+        // Close the Popup
+        ShowPopup = false;
+        // Get the current user
+        var user = (await authenticationStateTask).User;
+        // A new theme will have the Id set to 0
+        if (objThemeTable.Id == 0)
+        {
+            // Create new theme
+            ThemeTable objNewThemeTable = new ThemeTable();
+            objNewThemeTable.Date = System.DateTime.Now;
+            objNewThemeTable.ThemeName = objThemeTable.ThemeName;
+            objNewThemeTable.UserName = user.Identity.Name;
+            // Save the result
+            var result =
+            @Service.CreateThemeAsync(objNewThemeTable);
+        }
+        else
+        {
+            // This is an update
+            var result =
+            @Service.UpdateThemeAsync(objThemeTable);
+        }
+        // Get the themess for the current user
+        themes =
+        await @Service.GetThemesAsync(4);
+       
+    }
+
+     void EditTheme(ThemeTable themeTable)
+    {
+        // Set the selected theme
+        // as the current theme
+        objThemeTable = themeTable;
+        // Open the Popup
+        ShowPopup = true;
+    }
+
+    async Task DeleteTheme()
+    {
+        // Close the Popup
+        ShowPopup = false;
+        // Get the current user
+        var user = (await authenticationStateTask).User;
+        // Delete the theme
+        var result = @Service.DeleteThemeAsync(objThemeTable);
+        // Get the themes for the current user
+        themes =
+        await @Service.GetThemeAsync(user.Identity.Name);
+    }
 }
