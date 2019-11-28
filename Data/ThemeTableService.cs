@@ -1,4 +1,5 @@
 using BlazorServerAppDB.Data.BlazorServerApp;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,6 +12,26 @@ namespace BlazorServerApp.Data
         {
             _context = context;
         }
+
+        private int _number;
+        public int Number
+        {
+            get
+            {
+                return _number;
+            }
+            set
+            {
+                _number = value;
+                NotifyDataChanged();
+            }
+        }
+
+
+        public event Action OnClick;
+        private void NotifyDataChanged() => OnClick?.Invoke();
+
+
         public Task<List<ThemeTable>>
             GetThemeAsync(string strCurrentUser)
         {
@@ -24,6 +45,21 @@ namespace BlazorServerApp.Data
                  select themeTable).ToList();
             return Task.FromResult(colThemeTables);
         }
+
+        public Task<List<ThemeTable>>
+            GetThemeByNumAsync(int CurrentId)
+        {
+            List<ThemeTable> colThemeTables =
+                new List<ThemeTable>();
+            // Get Theme  
+            colThemeTables =
+                (from themeTable in _context.ThemeTable
+                     // only get entries for the current logged in user
+                 where themeTable.Id == CurrentId
+                 select themeTable).ToList();
+            return Task.FromResult(colThemeTables);
+        }
+
 
         public Task<List<ThemeTable>>
             GetThemesAsync(int CurrentTheme)

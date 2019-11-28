@@ -21,7 +21,7 @@
         @if (themes == null)
         {
             <!-- Show this if the current user has no data... yet... -->
-            <p><em>Loading...</em></p>
+            <p><em>Загрузка...</em></p>
         }
         else
         {
@@ -81,7 +81,7 @@
                                 <!-- Button to save the theme -->
                                 <button class="btn btn-primary"
                                         @onclick="SaveTheme">
-                                    Save
+                                    Сохранить
                                 </button>
 
                                 <!-- Only show delete button if not a new record -->
@@ -90,7 +90,7 @@
                                     <!-- Button to delete the forecast -->
                                     <button class="btn btn-primary"
                                             @onclick="DeleteTheme">
-                                        Delete
+                                        Удалить
                                     </button>
                                 }
                             </div>
@@ -103,7 +103,7 @@
     </Authorized>
     <!-- Show this section if the user is not logged in -->
     <NotAuthorized>
-        <p>You're not signed in.</p>
+        <p>Вы не вошли в аккаунт.</p>
     </NotAuthorized>
 </AuthorizeView>
 @code {
@@ -115,7 +115,7 @@
     {
         // Get the current user
         var user = (await authenticationStateTask).User;
-        // Get the forecasts for the current user
+        // Get the themes for the current user
         // We access ThemeTableService using @Service
         themes = await @Service.GetThemeAsync(user.Identity.Name);
     }

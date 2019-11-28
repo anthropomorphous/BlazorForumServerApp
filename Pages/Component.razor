@@ -1,22 +1,209 @@
 ﻿@page "/component"
+@using BlazorServerApp.Data
+@using BlazorServerAppDB.Data.BlazorServerApp
+@inject Data.ThemeTableService ThemeTableService
+@inherits OwningComponentBase<MessageTableService>
 
-<h1>Message</h1>
+
+<h1>Тема @ThemeTableService.Number</h1>
 
 <div style="padding: 15px">
 
-    <h2>Показать сообщение: @strt </h2>
+    <AuthorizeView>
+        <!-- Show this section if the user is logged in -->
+        <Authorized>
+            <h4>Добро пожаловать, @context.User.Identity.Name!</h4>
+            @if (messages == null)
+            {
+                <!-- Show this if the current user has no data... yet... -->
+                <p><em>Загрузка...</em></p>
+            }
+            else
+            {
+                <!-- Show the forecasts for the current user -->
+                <ul class="nav flex-column">
+                     @foreach (var message in messages)
+                     {
+                         <li id="@message.Id" class="nav-item px-3">
+                             <div class="alert alert-success">
+                                 <span class="oi oi-caret-bottom" aria-hidden="true"></span> <strong>Название темы</strong> @message.Date.Value.ToShortDateString()
 
-    <button class="btn btn-primary" @onclick="ShowMessage">Показать сообщение</button>
+                                 <div>@message.ThemeId </div>
+
+                                 <div>@message.UserName</div>: <span class="text-nowrap"></span> @message.Text
+                                 <div>
+                                     <!-- Edit the current theme -->
+                                     <button class="btn btn-primary"
+                                             @onclick="(() => EditMessage(message))">
+                                         Редактировать
+                                     </button>
+                                 </div>
+                             </div>
+                              
+                             
+                         </li>
+                     }   
+                    
+                </ul>
+                    
+                    <p>
+                        <!-- Add a new theme -->
+                        <button class="btn btn-primary"
+                                @onclick="AddNewMessage">
+                            Ответить
+                        </button>
+                    </p>
+                    @if (ShowPopup)
+                    {
+                        <!-- This is the popup to create or edit a theme -->
+                        <div class="modal" tabindex="-1" style="display:block" role="dialog">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h3 class="modal-title">Изменить</h3>
+                                        <!-- Button to close the popup -->
+                                        <button type="button" class="close"
+                                                @onclick="ClosePopup">
+                                            <span aria-hidden="true">X</span>
+                                        </button>
+                                    </div>
+                                    <!-- Edit form for the current theme -->
+                                    <div class="modal-body">
+                                        <input class="form-control" type="text"
+                                               placeholder="Сообщение"
+                                               @bind="objMessageTable.Text" />
+                                        <br />
+                                        <!-- Button to save the theme -->
+                                        <button class="btn btn-primary"
+                                                @onclick="SaveMessage">
+                                            Save
+                                        </button>
+
+                                        <!-- Only show delete button if not a new record -->
+                                        @if (objMessageTable.Id > 0)
+                                        {
+                                            <!-- Button to delete the forecast -->
+                                            <button class="btn btn-primary"
+                                                    @onclick="DeleteMessage">
+                                                Delete
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    }
+            </Authorized>
+        <!-- Show this section if the user is not logged in -->
+        <NotAuthorized>
+            <p>Темы могут видеть только зарегистрированные пользователи.</p>
+        </NotAuthorized>
+    </AuthorizeView>
 
 </div>
 
+
+
 @code {
+
+    protected override void OnInitialized()
+    {
+        ThemeTableService.OnClick += StateHasChanged;
+    }
 
     string strt = "...";
 
     void ShowMessage()
     {
         strt = "Ееееее биохакинг пацаны!!1!";
+    }
+
+    // Demonstrates how a parent component can supply parameters
+    [Parameter] public string Message { get; set; }
+
+    // AuthenticationState is available as a CascadingParameter
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    List<MessageTable> messages;
+    protected override async Task OnInitializedAsync()
+    {
+        // Get the current user
+        var user = (await authenticationStateTask).User;
+        // Get all the themes
+        // We access ThemeTableService using @Service
+        // And pick (probably ok) not only the 4 theme
+        messages = await @Service.GetMessageAsync(4);
+    }
+
+    MessageTable objMessageTable = new MessageTable();
+    bool ShowPopup = false;
+    void ClosePopup()
+    {
+        // Close the Popup
+        ShowPopup = false;
+    }
+    void AddNewMessage()
+    {
+        // Make new theme
+        objMessageTable = new MessageTable();
+        // Set Id to 0 so we know it is a new record
+        objMessageTable.Id = 0;
+        // Open the Popup
+        ShowPopup = true;
+    }
+    async Task SaveMessage()
+    {
+        // Close the Popup
+        ShowPopup = false;
+        // Get the current user
+        var user = (await authenticationStateTask).User;
+        // A new theme will have the Id set to 0
+        if (objMessageTable.Id == 0)
+        {
+            // Create new message
+            MessageTable objNewMessageTable = new MessageTable();
+            objNewMessageTable.Date = System.DateTime.Now;
+            objNewMessageTable.ThemeId = ThemeTableService.Number;
+            objNewMessageTable.Text = objMessageTable.Text;
+            objNewMessageTable.UserName = user.Identity.Name;
+            // Save the result
+            var result =
+            @Service.CreateMessageAsync(objNewMessageTable);
+        }
+        else
+        {
+            // This is an update
+            var result =
+            @Service.UpdateMessageAsync(objMessageTable);
+        }
+        // Get the themes for the current user
+        messages =
+        await @Service.GetMessageAsync(4);
+
+    }
+
+    void EditMessage(MessageTable messageTable)
+    {
+        // Set the selected message
+        // as the current message
+        objMessageTable = messageTable;
+        // Open the Popup
+        ShowPopup = true;
+    }
+
+    async Task DeleteMessage()
+    {
+        // Close the Popup
+        ShowPopup = false;
+        // Get the current user
+        var user = (await authenticationStateTask).User;
+        // Delete the theme
+        var result = @Service.DeleteMessageAsync(objMessageTable);
+        // Get the themes for the current user
+        messages =
+        await @Service.GetMessageAsync(user.Identity.Name);
     }
 
 }

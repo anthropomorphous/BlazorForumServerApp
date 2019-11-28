@@ -1,19 +1,35 @@
 ﻿@page "/themes"
 @using BlazorServerApp.Data
 @using BlazorServerAppDB.Data.BlazorServerApp
-
+@inject NavigationManager NavigationManager
+@inject Data.ThemeTableService ThemeTableService
 @inherits OwningComponentBase<ThemeTableService>
-<h1>Мои темы</h1>
+<h1>Темы</h1>
+
+<style>
+    /* Add a dark gray background color to the modal header and center text */
+    .modal-header {
+        background-image: linear-gradient(darkslategray, darkseagreen);
+        color: #fff !important;
+        text-align: center;
+        font-size: 30px;
+    }
+
+    .modal-header, .modal-body {
+        padding: 40px 50px;
+    }
+</style>
+
 <!-- AuthorizeView allows us to only show sections of the page -->
 <!-- based on the security on the current user -->
 <AuthorizeView>
     <!-- Show this section if the user is logged in -->
     <Authorized>
-        <h4>Hello, @context.User.Identity.Name!</h4>
+        <h4>Добро пожаловать, @context.User.Identity.Name!</h4>
         @if (themes == null)
         {
             <!-- Show this if the current user has no data... yet... -->
-            <p><em>Loading...</em></p>
+            <p><em>Загрузка...</em></p>
         }
         else
         {
@@ -24,6 +40,8 @@
                         <th>Дата</th>
                         <th>Тема</th>
                         <th>Пользователь</th>
+                        <td></td>
+                        <td></td>
                         <th></th>
                     </tr>
                 </thead>
@@ -32,13 +50,25 @@
                     {
                         <tr>
                             <td>@theme.Date.Value.ToShortDateString()</td>
-                            <td>@theme.ThemeName</td>
+                            <td >@theme.ThemeName </td>
                             <td>@theme.UserName</td>
+                            <td>
+                                <button class="btn btn-primary"
+                                        @onclick="(() => OpenTheme(theme))">
+                                    Открыть
+                                </button>
+                            </td>
+                            <td>
+                                <select @bind="ThemeTableService.Number">
+                                    <option value="@theme.Id" selected>Theme</option>
+                                </select>
+                                
+                            </td>
                             <td>
                                 <!-- Edit the current theme -->
                                 <button class="btn btn-primary"
                                         @onclick="(() => EditTheme(theme))">
-                                    Edit
+                                    Редактировать
                                 </button>
                             </td>
                         </tr>
@@ -97,45 +127,15 @@
     </Authorized>
     <!-- Show this section if the user is not logged in -->
     <NotAuthorized>
-        <p>You're not signed in.</p>
+        <p>Темы могут видеть только зарегистрированные пользователи.</p>
     </NotAuthorized>
 </AuthorizeView>
-
-<h1>Темы</h1>
-
-<div class="alert alert-secondary mt-4" role="alert">
-    <span class="oi oi-sun mr-2" aria-hidden="true"></span>
-    <strong>@Theme</strong>
-
-    <span class="text-nowrap"></span> Tell us what you think (haha, nope).
-</div>
-
-<div class="alert alert-secondary mt-4" role="alert">
-    <span class="oi oi-sun mr-2" aria-hidden="true"></span>
-    <strong>ы</strong>
-
-    <span class="text-nowrap"></span> Tell us what you think (haha, nope).
-</div>
-
-<div class="alert alert-secondary mt-4" role="alert">
-    <span class="oi oi-sun mr-2" aria-hidden="true"></span>
-    <strong>ы</strong>
-
-    <span class="text-nowrap"></span> Tell us what you think (haha, nope).
-    <div class="alert alert-secondary mt-4" role="alert">
-        <span class="oi oi-sun mr-2" aria-hidden="true"></span>
-        <strong>ы</strong>
-
-        <span class="text-nowrap"></span> Tell us what you think (haha, nope).
-    </div>
-</div>
-
 
 @code {
     // Demonstrates how a parent component can supply parameters
     [Parameter] public string Theme { get; set; }
 
-     // AuthenticationState is available as a CascadingParameter
+    // AuthenticationState is available as a CascadingParameter
     [CascadingParameter]
     private Task<AuthenticationState> authenticationStateTask { get; set; }
     List<ThemeTable> themes;
@@ -189,19 +189,29 @@
             var result =
             @Service.UpdateThemeAsync(objThemeTable);
         }
-        // Get the themess for the current user
+        // Get the themes for the current user
         themes =
         await @Service.GetThemesAsync(4);
-       
+
     }
 
-     void EditTheme(ThemeTable themeTable)
+    void EditTheme(ThemeTable themeTable)
     {
         // Set the selected theme
         // as the current theme
         objThemeTable = themeTable;
         // Open the Popup
         ShowPopup = true;
+    }
+
+    int themenum = 0;
+
+    void OpenTheme(ThemeTable themeTable)
+    {
+        objThemeTable = themeTable;
+        themenum = objThemeTable.Id;
+        NavigationManager.NavigateTo("component");
+
     }
 
     async Task DeleteTheme()

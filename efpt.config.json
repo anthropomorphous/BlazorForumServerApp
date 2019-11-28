@@ -14,7 +14,7 @@
    "Tables": [
       {
          "HasPrimaryKey": true,
-         "Name": "[dbo].[AllThemesTable]"
+         "Name": "[dbo].[MessageTable]"
       },
       {
          "HasPrimaryKey": true,
