@@ -2,6 +2,7 @@ using BlazorServerAppDB.Data.BlazorServerApp;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 namespace BlazorServerApp.Data
 {
     public class MessageTableService
@@ -13,7 +14,7 @@ namespace BlazorServerApp.Data
             _context = context;
         }
         public Task<List<MessageTable>>
-            GetMessageAsync(int CurrentId)
+            GetMessagesAsync(int CurrentId)
         {
             List<MessageTable> colMessageTable =
                 new List<MessageTable>();
@@ -21,6 +22,7 @@ namespace BlazorServerApp.Data
             colMessageTable =
                 (from messageTable in _context.MessageTable
                      // only get entries for the current logged in user
+                 where messageTable.ThemeId == CurrentId
                  select messageTable).ToList();
             return Task.FromResult(colMessageTable);
         }
@@ -30,7 +32,9 @@ namespace BlazorServerApp.Data
         {
             List<MessageTable> colMessageTables =
                 new List<MessageTable>();
-            // Get Theme  
+            Dictionary<ThemeTable, MessageTable> dictThemeTables =
+               new Dictionary<ThemeTable, MessageTable>();
+            // Get Message
             colMessageTables =
                 (from messageTable in _context.MessageTable
                      // only get entries for the current logged in user

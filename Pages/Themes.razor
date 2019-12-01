@@ -41,7 +41,6 @@
                         <th>Тема</th>
                         <th>Пользователь</th>
                         <td></td>
-                        <td></td>
                         <th></th>
                     </tr>
                 </thead>
@@ -50,22 +49,15 @@
                     {
                         <tr>
                             <td>@theme.Date.Value.ToShortDateString()</td>
-                            <td >@theme.ThemeName </td>
+                            <td>@theme.ThemeName </td>
                             <td>@theme.UserName</td>
                             <td>
                                 <button class="btn btn-primary"
-                                        @onclick="(() => OpenTheme(theme))">
+                                        @onclick="(() => OpenTheme(theme, theme.Id, theme.ThemeName))">
                                     Открыть
                                 </button>
                             </td>
                             <td>
-                                <select @bind="ThemeTableService.Number">
-                                    <option value="@theme.Id" selected>Theme</option>
-                                </select>
-                                
-                            </td>
-                            <td>
-                                <!-- Edit the current theme -->
                                 <button class="btn btn-primary"
                                         @onclick="(() => EditTheme(theme))">
                                     Редактировать
@@ -132,8 +124,11 @@
 </AuthorizeView>
 
 @code {
+    public int i = 0;
+
     // Demonstrates how a parent component can supply parameters
     [Parameter] public string Theme { get; set; }
+
 
     // AuthenticationState is available as a CascadingParameter
     [CascadingParameter]
@@ -146,8 +141,9 @@
         // Get all the themes
         // We access ThemeTableService using @Service
         // And pick (probably ok) not only the 4 theme
-        themes = await @Service.GetThemesAsync(4);
+        themes = await @Service.GetThemesAsync();
     }
+
 
     ThemeTable objThemeTable = new ThemeTable();
     bool ShowPopup = false;
@@ -191,7 +187,7 @@
         }
         // Get the themes for the current user
         themes =
-        await @Service.GetThemesAsync(4);
+        await @Service.GetThemesAsync();
 
     }
 
@@ -206,10 +202,11 @@
 
     int themenum = 0;
 
-    void OpenTheme(ThemeTable themeTable)
+    void OpenTheme(ThemeTable themeTable, int i, string name)
     {
+        ThemeTableService.Name = name;
+        ThemeTableService.Number = i;
         objThemeTable = themeTable;
-        themenum = objThemeTable.Id;
         NavigationManager.NavigateTo("component");
 
     }

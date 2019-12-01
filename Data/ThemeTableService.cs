@@ -27,6 +27,35 @@ namespace BlazorServerApp.Data
             }
         }
 
+        private ThemeTable _theme;
+
+        public ThemeTable Theme
+        {
+            get
+            {
+                return _theme;
+            }
+
+            set
+            {
+                _theme = value;
+                NotifyDataChanged();
+            }
+        }
+
+        private string _themename;
+        public string Name
+        {
+            get
+            {
+                return _themename;
+            }
+            set
+            {
+                _themename = value;
+                NotifyDataChanged();
+            }
+        }
 
         public event Action OnClick;
         private void NotifyDataChanged() => OnClick?.Invoke();
@@ -62,7 +91,7 @@ namespace BlazorServerApp.Data
 
 
         public Task<List<ThemeTable>>
-            GetThemesAsync(int CurrentTheme)
+            GetThemesAsync()
         {
             List<ThemeTable> colThemeTable =
                 new List<ThemeTable>();
