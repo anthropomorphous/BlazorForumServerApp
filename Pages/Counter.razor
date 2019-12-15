@@ -1,5 +1,6 @@
 ﻿@page "/counter"
-
+@using Microsoft.Extensions.Logging
+@inject ILogger<Counter> logger
 
 <h1>Counter</h1>
 
@@ -14,5 +15,15 @@
     private void IncrementCount()
     {
         currentCount++;
+        logger.LogInformation("Incremented count to {currentCount}", currentCount);
+
+        logger.LogTrace("User {User} logged in {Address} address", currentCount, currentCount);
+        //logger.LogDebug(exception, "Error while processing request from {Address}", address);
+
+        // string text = "A class is the most powerful data type in C#. Like a structure, " +
+                      // "a class defines the data and behavior of the data type. ";
+
+        //System.IO.File.WriteAllText(@"C:\Users\Public\TestFolder\WriteText.txt", text);
     }
+
 }

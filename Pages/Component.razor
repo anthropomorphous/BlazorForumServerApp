@@ -1,13 +1,13 @@
 ﻿@page "/component"
 @using BlazorServerApp.Data
 @using BlazorServerAppDB.Data.BlazorServerApp
+@using Microsoft.Extensions.Logging
+@inject ILogger<Component> logger
 @inject Data.ThemeTableService ThemeTableService
 @inherits OwningComponentBase<MessageTableService>
 
 
 <h1>Тема #@ThemeTableService.Name</h1>
-
-
 
 <div style="padding: 15px">
 
@@ -23,13 +23,12 @@
             }
             else
             {
-                <!-- Show the forecasts for the current user -->
                 <ul class="nav flex-column">
                     @foreach (var message in messages)
                     {
                         <li id="@message.Id" class="nav-item px-3">
                             <div class="alert alert-success">
-                                <span class="oi oi-caret-bottom" aria-hidden="true"></span> <strong>@ThemeName</strong> @message.Date.Value.ToShortDateString()
+                                <span class="oi oi-caret-bottom" aria-hidden="true"></span> @message.Date.Value.ToShortDateString()
 
                                 <div>#@message.ThemeId @ThemeTableService.Name</div>
 
@@ -117,12 +116,12 @@
         ThemeTableService.OnClick += StateHasChanged;
     }
 
-    string strt = "...";
+    //  string strt = "...";
 
-    void ShowMessage()
-    {
-        strt = "Ееееее биохакинг пацаны!!1!";
-    }
+    //void ShowMessage()
+    //{
+    //    strt = "Ееееее биохакинг пацаны!!1!";
+    //}
 
 
 
@@ -133,19 +132,24 @@
     [CascadingParameter]
     private Task<AuthenticationState> authenticationStateTask { get; set; }
 
+
     List<MessageTable> messages;
-    List<ThemeTable> themes;
-    string ThemeName;
+    //List<ThemeTable> themes;
+    // string ThemeName;
 
     protected override async Task OnInitializedAsync()
     {
         // Get the current user
         var user = (await authenticationStateTask).User;
-        // Get all the themes
-        // We access ThemeTableService using @Service
-        // And pick (probably ok) not only the 4
-        messages = await @Service.GetMessagesAsync(ThemeTableService.Number);
-
+        try
+        {
+            // We access ThemeTableService using @Service
+            messages = await @Service.GetMessagesAsync(ThemeTableService.Number);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, e.Message);
+        }
     }
 
     MessageTable objMessageTable = new MessageTable();

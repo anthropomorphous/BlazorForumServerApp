@@ -1,36 +1,42 @@
 ﻿@page "/account"
+@using BlazorServerApp.Data
+@using BlazorServerAppDB.Data.BlazorServerApp
+@using Microsoft.AspNetCore.Mvc
+@inject Data.EmailService EmailService
+@inherits OwningComponentBase<EmailService>
 
 <div>
     <style>
-        a.main{
-            text-indent: 100px; 
+        a.main {
+            text-indent: 100px;
             font-size: large;
         }
-        p.main{
-            font-size:large;
+
+        p.main {
+            font-size: large;
             text-indent: 100px;
         }
-        img{
+
+        img {
             border-radius: 50%;
             height: 80px;
             width: 80px;
         }
-        
     </style>
 </div>
 
 <h3>Добро пожаловать, @username!</h3>
 
 <div style="padding: 20px;">
-    
-    <img src=@imgsrc/><a class="main"> &nbsp &nbspИмя:</a><br />
+
+    <img src=@imgsrc /><a class="main"> &nbsp &nbspИмя:</a><br />
     <br />
     <p class="main">Адрес электронной почты:</p>
     <br />
     <p class="main">Мои темы</p>
     <br />
-    
-    <div class="row align-items-center remember" >
+
+    <div class="row align-items-center remember">
         <NavLink class="nav-link" href="login">
             <button class="btn btn-primary">Изменить</button>
         </NavLink>
@@ -38,9 +44,13 @@
             <button class="btn btn-primary">Удалить аккаунт</button>
         </NavLink>
     </div>
-        
-    
-   
+
+    <div>
+        <button class="btn btn-primary">
+            Отправить сообщение
+        </button>
+    </div>
+
 </div>
 
 @code {
@@ -48,5 +58,7 @@
     string username = "Anon";
 
     string imgsrc = "Images/accountimg.png";
+
+    
 
 }

@@ -1,0 +1,65 @@
+﻿@page "/sendemail"
+@using System.Net;
+@using System.Net.Mail;
+@using MimeKit;
+@using BlazorServerApp.Data
+@using BlazorServerAppDB.Data.BlazorServerApp
+@using Microsoft.Extensions.Logging
+@inject ILogger<Counter> logger
+@inject Data.EmailService EmailService
+@inherits OwningComponentBase<EmailService>
+
+
+<h3>SendEmail</h3>
+<h2>Submit Email Request for Assistance</h2>
+<div>
+    <div>
+        Your name:
+        <input type="text" name="customerName" />
+    </div>
+
+    <div>
+        Your email address:
+        <input type="text" name="customerEmail" />
+    </div>
+
+    <div>
+        Details about your problem: <br />
+        <textarea name="customerRequest" cols="45" rows="4"></textarea>
+    </div>
+
+    <div class="modal-body">
+        <input class="form-control" type="text"
+               placeholder="Сообщение"
+               @bind="message" />
+        <br />
+        <button class="btn btn-primary"
+                @onclick="SendMail">
+            Отправить
+        </button>
+    </div>
+
+</div>
+
+@code {
+
+    string eMail = "lampochka99@bk.ru";
+    string subject = " ";
+    string message = " ";
+
+    string lbl;
+    async Task SendMail()
+    {
+        var result =
+           @Service.SendEmailAsync(eMail, subject, message);
+
+        
+
+
+        logger.LogInformation("Message is sent");
+
+        // lbl =
+        //  await @Service.SendEmailAsync(EmailService.Message);
+    }
+
+}

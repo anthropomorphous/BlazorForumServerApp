@@ -1,8 +1,10 @@
 ﻿@page "/themes"
 @using BlazorServerApp.Data
 @using BlazorServerAppDB.Data.BlazorServerApp
+@using Microsoft.Extensions.Logging
 @inject NavigationManager NavigationManager
 @inject Data.ThemeTableService ThemeTableService
+@inject ILogger<Themes> logger
 @inherits OwningComponentBase<ThemeTableService>
 <h1>Темы</h1>
 
@@ -208,6 +210,7 @@
         ThemeTableService.Number = i;
         objThemeTable = themeTable;
         NavigationManager.NavigateTo("component");
+       // logger.LogInformation("Processing request from {Address}", address);
 
     }
 
