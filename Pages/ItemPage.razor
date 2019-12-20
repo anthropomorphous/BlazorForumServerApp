@@ -1,0 +1,200 @@
+﻿@page "/itempage"
+@using BlazorServerApp.Data
+@using BlazorServerAppDB.Data.BlazorServerApp
+@using Microsoft.Extensions.Logging
+@inject NavigationManager NavigationManager
+@inject ILogger<ItemPage> logger
+@inject Data.ItemTableService ItemTableService
+@inject Data.MessageTableService MessageTableService
+@inherits OwningComponentBase<MessageTableService>
+
+<h1>Тема #@ItemTableService.Category</h1>
+
+<div style="padding: 15px">
+    <AuthorizeView>
+        <Authorized>
+
+            @if (messages == null)
+            {
+                <p><em>Загрузка...</em></p>
+            }
+            else
+            {
+                <h2>@itemId</h2>
+                <ul class="nav flex-column">
+                    @foreach (var message in messages)
+                    {
+                        <li id="@itemId" class="nav-item px-3">
+                            <div class="alert alert-success">
+                                <span class="oi oi-caret-bottom" aria-hidden="true"></span> @message.Date.Value.ToShortDateString()
+
+                                <div>#@message.ItemId @ItemTableService.Name</div>
+
+                                <div>@message.UserName</div>
+                                <div style="padding:10px;">@message.Text</div>
+
+                                <div>
+                                    <button class="btn btn-primary"
+                                            @onclick="(() => EditMessage(message))">
+                                        Редактировать
+                                    </button>
+                                </div>
+                            </div>
+
+                        </li>
+                    }
+
+                </ul>
+
+                <p>
+                    <button class="btn btn-primary"
+                            @onclick="AddNewMessage">
+                        Ответить
+                    </button>
+                </p>
+                @if (ShowPopup)
+                {
+                    <div class="modal" tabindex="-1" style="display:block" role="dialog">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h3 class="modal-title">Изменить</h3>
+                                    <!-- Button to close the popup -->
+                                    <button type="button" class="close"
+                                            @onclick="ClosePopup">
+                                        <span aria-hidden="true">X</span>
+                                    </button>
+                                </div>
+                                <!-- Edit form for the current theme -->
+                                <div class="modal-body">
+                                    <input class="form-control" type="text"
+                                           placeholder="Сообщение"
+                                           @bind="objMessageTable.Text" />
+                                    <br />
+                                    <button class="btn btn-primary"
+                                            @onclick="SaveMessage">
+                                        Save
+                                    </button>
+
+                                    @if (objMessageTable.Id > 0)
+                                    {
+                                        <button class="btn btn-primary"
+                                                @onclick="DeleteMessage">
+                                            Delete
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+            }
+        </Authorized>
+        <NotAuthorized>
+            <p>Темы могут видеть только зарегистрированные пользователи.</p>
+        </NotAuthorized>
+    </AuthorizeView>
+
+</div>
+
+
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        ItemTableService.OnClick += StateHasChanged;
+    }
+
+    [Parameter] public string Message { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+
+
+    List<MessageTable> messages;
+    int itemId = 0;
+    string description = "";
+    string category = "";
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var user = (await authenticationStateTask).User;
+        try
+        {
+            messages = await @Service.GetMessagesByItemAsync(ItemTableService.Number);
+            MessageTable thisMessage = messages.First();
+            itemId = thisMessage.ItemId;
+       
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, e.Message);
+        }
+    }
+
+    MessageTable objMessageTable = new MessageTable();
+    ThemeTable objThemeTable = new ThemeTable();
+    bool ShowPopup = false;
+    void ClosePopup()
+    {
+        ShowPopup = false;
+    }
+    void AddNewMessage()
+    {
+        objMessageTable = new MessageTable();
+        objMessageTable.Id = 0;
+        ShowPopup = true;
+    }
+
+    async Task SaveMessage()
+    {
+        ShowPopup = false;
+        var user = (await authenticationStateTask).User;
+        if (objMessageTable.Id == 0)
+        {
+            // Create new message
+            MessageTable objNewMessageTable = new MessageTable();
+            objNewMessageTable.Date = System.DateTime.Now;
+            objNewMessageTable.ItemId = ItemTableService.Number;
+            objNewMessageTable.Text = objMessageTable.Text;
+            objNewMessageTable.UserName = user.Identity.Name;
+            objNewMessageTable.ItemId = ItemTableService.Number;
+
+
+            // Save the result
+            var result =
+            @Service.CreateMessageAsync(objNewMessageTable);
+        }
+        else
+        {
+            // This is an update
+            var result =
+            @Service.UpdateMessageAsync(objMessageTable);
+        }
+        // Get the messages for the current theme
+
+        messages =
+        await @Service.GetMessagesByItemAsync(ItemTableService.Number);
+
+    }
+
+    void EditMessage(MessageTable messageTable)
+    {
+        objMessageTable = messageTable;
+        ShowPopup = true;
+    }
+
+    async Task DeleteMessage()
+    {
+        ShowPopup = false;
+        var user = (await authenticationStateTask).User;
+        var result = @Service.DeleteMessageAsync(objMessageTable);
+        messages =
+        await @Service.GetMessageAsync(user.Identity.Name);
+    }
+
+}

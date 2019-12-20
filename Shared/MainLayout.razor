@@ -4,13 +4,23 @@
     .sidebar{
         background-image: linear-gradient(darkslategray, darkseagreen, aliceblue);
     }
+    a.mynavbar {
+        width: 250px; 
+        text-align: center;
+        text-transform: uppercase;
+        color: #4CAF50;
+    }
 </style>
 
 <div class="sidebar">
     <NavMenu />
 </div>
 
+
+
 <div class="main">
+
+
 
     <div class="top-row px-3 auth">
         <LoginControl />
@@ -20,7 +30,39 @@
         <a href="https://ru.wikipedia.org/wiki/%D0%91%D0%B8%D0%BE%D1%85%D0%B0%D0%BA%D0%B5%D1%80" target="_blank">Подробнее</a>
     </div>
 
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <button class="navbar-toggler" type="button" data-toggle="collapse"
+                data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link mynavbar" style="color: #4CAF50;" href="drugspage"> фармацевтика </a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link mynavbar" style="color: #4CAF50;" href="sportpage"> спорт </a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link mynavbar" style="color: #4CAF50;" href="productspage"> продукты </a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link mynavbar" style="color: #4CAF50;" href="techpage"> техника </a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link mynavbar" style="color: #4CAF50;" href="carepage"> уход </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
     <div class="content px-4">
+
         @Body
     </div>
+    @*<div class="col-lg-6 col-md-6" style="height: 30%">
+        <img src="Images/new-bottom-facets.jpg" class="img-responsive" style="position:absolute;bottom:0">
+    </div>*@
 </div>

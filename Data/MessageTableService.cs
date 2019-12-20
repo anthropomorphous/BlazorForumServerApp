@@ -28,6 +28,19 @@ namespace BlazorServerApp.Data
         }
 
         public Task<List<MessageTable>>
+           GetMessagesByItemAsync(int CurrentId)
+        {
+            List<MessageTable> colMessageTable =
+                new List<MessageTable>();
+            // Get Messages 
+            colMessageTable =
+                (from messageTable in _context.MessageTable
+                 where messageTable.ItemId == CurrentId
+                 select messageTable).ToList();
+            return Task.FromResult(colMessageTable);
+        }
+
+        public Task<List<MessageTable>>
             GetMessageAsync(string strCurrentUser)
         {
             List<MessageTable> colMessageTables =

@@ -1,0 +1,124 @@
+﻿@page "/itemspage"
+@using BlazorServerApp.Data
+@using BlazorServerAppDB.Data.BlazorServerApp
+@using Microsoft.Extensions.Logging
+@inject ILogger<ItemsPage> logger
+@inject Data.ItemTableService ItemTableService
+@inherits OwningComponentBase<ItemTableService>
+
+
+<h1> Штука </h1>
+
+<div class="main">
+    <ul class="pizza-cards">
+        @if (itemsList != null)
+        {
+            @foreach (var item in itemsList)
+            {
+                <li style="background-image: url('@item.ImageUrl')">
+                    <div class="pizza-info">
+                        <span class="title">@item.ItemName</span>
+                        <p>@item.Description</p>
+                        <span>@ItemTableService.Category</span>
+                    </div>
+                </li>
+            }
+        }
+    </ul>
+</div>
+
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    List<ItemTable> itemsList;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = (await authenticationStateTask).User;
+
+        try
+        {
+            itemsList = await @Service.GetItemByCategoryAsync(ItemTableService.Category);
+
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, e.Message);
+        }
+
+    }
+
+    ItemTable objItemTable = new ItemTable();
+    CategoryTable objCategoryTable = new CategoryTable();
+
+
+    bool ShowPopup = false;
+
+    void ClosePopup()
+    {
+        ShowPopup = false;
+    }
+
+    void AddNewItemTable()
+    {
+        objItemTable = new ItemTable();
+        objItemTable.Id = 0;
+        ShowPopup = true;
+    }
+
+    async Task SaveItemTable()
+    {
+
+        ShowPopup = false;
+        var user = (await authenticationStateTask).User;
+        if (objItemTable.Id == 0)
+        {
+            ItemTable objNewItemTable = new ItemTable();
+
+            objNewItemTable.Date = System.DateTime.Now;
+
+            objNewItemTable.CategoryId = ItemTableService.Number;
+
+            objNewItemTable.UserName = user.Identity.Name;
+
+            objNewItemTable.Description = ItemTableService.Description;
+
+            objNewItemTable.ImageUrl = objItemTable.ImageUrl;
+
+            var result =
+            @Service.CreateItemAsync(objNewItemTable);
+        }
+        else
+        {
+            var result =
+            @Service.UpdateItemAsync(objItemTable);
+        }
+
+        itemsList =
+        await @Service.GetItemByCategoryAsync(ItemTableService.Category);
+    }
+
+    async Task DeleteBillSplit(ItemTable itemTable, string category)
+    {
+        ShowPopup = false;
+        var user = (await authenticationStateTask).User;
+        var result = @Service.DeleteItemAsync(itemTable);
+        itemsList =
+        await @Service.GetItemByCategoryAsync(category);
+    }
+
+    //void OpenEmailSender()
+    //{
+    //    NavigationManager.NavigateTo("emailsender");
+    //}
+
+    //void OpenEmailSender(ItemTable itemTable, string name)
+    //{
+    //    BillSplitService.Re = name;
+    //    objBillSplit = billSplit;
+    //    NavigationManager.NavigateTo("emailsender");
+    //}
+}
+
+

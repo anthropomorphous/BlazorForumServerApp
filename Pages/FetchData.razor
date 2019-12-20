@@ -12,10 +12,8 @@
 *@
 @inherits OwningComponentBase<ThemeTableService>
 <h1>Мои темы</h1>
-<!-- AuthorizeView allows us to only show sections of the page -->
-<!-- based on the security on the current user -->
+
 <AuthorizeView>
-    <!-- Show this section if the user is logged in -->
     <Authorized>
         <h4>Hello, @context.User.Identity.Name!</h4>
         @if (themes == null)
@@ -25,7 +23,7 @@
         }
         else
         {
-            <!-- Show the forecasts for the current user -->
+            <!-- Show the themes for the current user -->
             <table class="table">
                 <thead>
                     <tr>
@@ -177,7 +175,6 @@
 
     async Task DeleteTheme()
     {
-        // Close the Popup
         ShowPopup = false;
         // Get the current user
         var user = (await authenticationStateTask).User;

@@ -116,19 +116,8 @@
         ThemeTableService.OnClick += StateHasChanged;
     }
 
-    //  string strt = "...";
-
-    //void ShowMessage()
-    //{
-    //    strt = "Ееееее биохакинг пацаны!!1!";
-    //}
-
-
-
-    // Demonstrates how a parent component can supply parameters
     [Parameter] public string Message { get; set; }
 
-    // AuthenticationState is available as a CascadingParameter
     [CascadingParameter]
     private Task<AuthenticationState> authenticationStateTask { get; set; }
 
@@ -179,9 +168,7 @@
 
     async Task SaveMessage()
     {
-        // Close the Popup
         ShowPopup = false;
-        // Get the current user
         var user = (await authenticationStateTask).User;
         // A new theme will have the Id set to 0
         if (objMessageTable.Id == 0)

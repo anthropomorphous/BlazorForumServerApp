@@ -14,6 +14,14 @@
    "Tables": [
       {
          "HasPrimaryKey": true,
+         "Name": "[dbo].[CategoryTable]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[ItemTable]"
+      },
+      {
+         "HasPrimaryKey": true,
          "Name": "[dbo].[MessageTable]"
       },
       {
@@ -25,5 +33,6 @@
    "UseFluentApiOnly": true,
    "UseHandleBars": false,
    "UseInflector": false,
-   "UseLegacyPluralizer": false
+   "UseLegacyPluralizer": false,
+   "UseSpatial": false
 }

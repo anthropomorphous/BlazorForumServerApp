@@ -4,7 +4,8 @@
 @inject UserManager<IdentityUser> _UserManager
 @inject RoleManager<IdentityRole> _RoleManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
-<h3>Администрирование</h3>
+<h1>Администрирование</h1>
+<br />
 <AuthorizeView>
     <Authorized>
         @if (@context.User.IsInRole(ADMINISTRATION_ROLE))
@@ -17,6 +18,7 @@
                         <th>Id</th>
                         <th>User Name</th>
                         <th>Email</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -165,7 +167,7 @@
             {
                 var user = await _UserManager.FindByIdAsync(objUser.Id);
                 user.Email = objUser.Email;
- 
+
                 await _UserManager.UpdateAsync(user);
                 if (objUser.PasswordHash != "*****")
                 {
@@ -267,7 +269,7 @@
     async Task EditUser(IdentityUser _IdentityUser)
     {
         objUser = _IdentityUser;
-        
+
         var user = await _UserManager.FindByIdAsync(objUser.Id);
         if (user != null)
         {
@@ -311,11 +313,13 @@
             Id = x.Id,
             UserName = x.UserName,
             Email = x.Email,
-            PasswordHash = "*****"
+           // PasswordHash = "*****"
         });
         foreach (var item in user)
         {
             ColUsers.Add(item);
         }
+
+        ColUsers.RemoveAll(x => x.UserName == "Admin@BlazorServerApp.com");
     }
 }

@@ -5,61 +5,135 @@
 @using BlazorServerApp.Data
 @using BlazorServerAppDB.Data.BlazorServerApp
 @using Microsoft.Extensions.Logging
-@inject ILogger<Counter> logger
+@inject ILogger<SendEmail> logger
 @inject Data.EmailService EmailService
+@inject NavigationManager NavigationManager
 @inherits OwningComponentBase<EmailService>
 
 
-<h3>SendEmail</h3>
-<h2>Submit Email Request for Assistance</h2>
-<div>
-    <div>
-        Your name:
-        <input type="text" name="customerName" />
-    </div>
+<style>
+    input.my-input {
+        width: 325px;
+    }
 
-    <div>
-        Your email address:
-        <input type="text" name="customerEmail" />
-    </div>
+    input.large-input {
+        width: 350px;
+        line-grid: create;
+        height: 100px;
+    }
+</style>
 
-    <div>
-        Details about your problem: <br />
-        <textarea name="customerRequest" cols="45" rows="4"></textarea>
-    </div>
+<h1>Отправьте письмо участнику:</h1>
+<br />
 
-    <div class="modal-body">
-        <input class="form-control" type="text"
-               placeholder="Сообщение"
-               @bind="message" />
-        <br />
-        <button class="btn btn-primary"
-                @onclick="SendMail">
-            Отправить
-        </button>
-    </div>
+<AuthorizeView>
+    <Authorized>
 
-</div>
+        <div>
+            <div>
+                Ваша почта:
+                <input class="my-input form-control"
+                       type="text"
+                       name="customerEmail"
+                       placeholder="Ваш Email"
+                       @bind="eMailFrom" />
+            </div>
+            <br />
+
+            <div>
+                Ваш пароль:
+                <input class="my-input form-control"
+                       type="password" name="password"
+                       placeholder="Ваш пароль"
+                       @bind="password" />
+            </div>
+            <br />
+
+            <div>
+                <span>
+                    Получатель:
+                    <input class="my-input form-control"
+                           typeof="text"
+                           placeholder="Email участника"
+                           @bind="eMailTo" />
+                </span>
+            </div>
+            <br />
+
+            <div>
+                Ваше сообщение: <br />
+                <textarea name="customerRequest"
+                          class="form-control"
+                          cols="45"
+                          rows="4"
+                          placeholder="Введите сообщение..."
+                          @bind="message">
+        </textarea>
+
+            </div>
+            <br />
+
+            <button class="btn btn-primary"
+                    @onclick="SendMail">
+                Отправить
+            </button>
+
+            @if (ShowPopup)
+            {
+                <div class="modal" tabindex="-1" style="display:block" role="dialog">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3 class="modal-title">Сообщение отправлено</h3>
+                                <button type="button" class="close"
+                                        @onclick="ClosePopup">
+                                    <span aria-hidden="true">X</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <p>Войдите в свой аккаунт либо зарегистрируйтесь.</p>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
 
-    string eMail = "lampochka99@bk.ru";
-    string subject = " ";
-    string message = " ";
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
 
-    string lbl;
+    string eMailFrom = "";
+    string subject = "";
+    string message = "";
+    string password = "";
+    string eMailTo = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = (await authenticationStateTask).User;
+        eMailFrom = user.Identity.Name;
+    }
+
+    bool ShowPopup = false;
+
+    void ClosePopup()
+    {
+        ShowPopup = false;
+    }
+
     async Task SendMail()
     {
+
         var result =
-           @Service.SendEmailAsync(eMail, subject, message);
+           @Service.SendEmailAsync(eMailFrom, password, eMailTo, subject, message);
 
-        
+        logger.LogInformation("Сообщение отправлено");
 
-
-        logger.LogInformation("Message is sent");
-
-        // lbl =
-        //  await @Service.SendEmailAsync(EmailService.Message);
+        ShowPopup = true;
     }
 
 }

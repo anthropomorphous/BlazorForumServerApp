@@ -1,0 +1,199 @@
+﻿@page "/drugspage"
+@using System.IO
+@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Identity;
+@using System.Collections;
+@using BlazorServerApp.Data
+@using BlazorServerAppDB.Data.BlazorServerApp
+@using Microsoft.Extensions.Logging
+@using Radzen
+@using Radzen.Blazor
+@inject NavigationManager NavigationManager
+@inject ILogger<ItemsPage> logger
+@inject Data.ItemTableService ItemTableService
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment HostEnvironment
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inherits OwningComponentBase<ItemTableService>
+
+<h1>Фармацевтика</h1>
+<br />
+
+<AuthorizeView>
+    <Authorized>
+        <div class="main">
+            @if (itemsList != null)
+            {
+                @foreach (var item in itemsList)
+                {
+                    <div class="card" style="width: 18rem;">
+                        <img class="card-img-top" src="~/Images/accountimg.png" alt="Card image cap">
+                        <div class="card-body">
+                            <h5 class="card-title">@item.ItemName</h5>
+                            <p class="card-text">@item.Description</p>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">@item.Category</li>
+                        </ul>
+                        <div class="card-body">
+                            <a href="itempage" class="card-link">Открыть</a>
+                            <a href="#" class="card-link">Удалить</a>
+                        </div>
+                    </div>
+                    <br />
+                }
+            }
+        </div>
+
+        @if (@context.User.IsInRole(ADMINISTRATION_ROLE))
+        {
+            <p>
+                <button class="btn btn-primary" style=" background-color: #4CAF50;"
+                        @onclick="AddNewItemTable">
+                    Добавить продукт
+                </button>
+            </p>
+            @if (ShowPopup)
+            {
+                <div class="modal" tabindex="-1" style="display:block" role="dialog">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3 class="modal-title">Изменить</h3>
+                                <button type="button" class="close"
+                                        @onclick="ClosePopup">
+                                    <span aria-hidden="true">X</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <input class="form-control" type="text"
+                                       placeholder="Продукт"
+                                       @bind="objItemTable.ItemName" />
+                                <br />
+                                <input class="form-control" type="text"
+                                       placeholder="Описание"
+                                       @bind="objItemTable.Description" />
+                                <br />
+                                <input class="form-control" type="text"
+                                       placeholder="Image URL"
+                                       @bind="objItemTable.ImageUrl" />
+                                <br />
+
+                                <div align="center">
+
+                                </div>
+                                <button class="btn btn-primary"
+                                        @onclick="SaveItemTable">
+                                    Сохранить
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </Authorized>
+    <NotAuthorized>
+        <p>Войдите в свой аккаунт либо зарегистрируйтесь.</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code{
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    string ADMINISTRATION_ROLE = "Administrators";
+    bool ShowPopup = false;
+
+    List<ItemTable> itemsList;
+
+
+    int categoryId = 0;
+    string category = "Фармацевтика";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = (await authenticationStateTask).User;
+
+        try
+        {
+            itemsList = await @Service.GetItemByCategoryAsync(category);
+
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, e.Message);
+        }
+
+    }
+
+    ItemTable objItemTable = new ItemTable();
+    CategoryTable objCategoryTable = new CategoryTable();
+
+
+    void ClosePopup()
+    {
+        ShowPopup = false;
+    }
+
+    void AddNewItemTable()
+    {
+        objItemTable = new ItemTable();
+        objItemTable.Id = 0;
+        ShowPopup = true;
+    }
+
+    async Task SaveItemTable()
+    {
+
+        ShowPopup = false;
+        var user = (await authenticationStateTask).User;
+        if (objItemTable.Id == 0)
+        {
+            ItemTable objNewItemTable = new ItemTable();
+
+            objNewItemTable.Date = System.DateTime.Now;
+
+            objNewItemTable.ItemName = objItemTable.ItemName;
+
+            objNewItemTable.CategoryId = categoryId;
+
+            objNewItemTable.UserName = user.Identity.Name;
+
+            objNewItemTable.Description = objItemTable.Description;
+
+            objNewItemTable.ImageUrl = objItemTable.ImageUrl;
+
+            objNewItemTable.Category = category;
+
+            var result =
+            @Service.CreateItemAsync(objNewItemTable);
+        }
+        else
+        {
+            var result =
+            @Service.UpdateItemAsync(objItemTable);
+        }
+
+        itemsList =
+        await @Service.GetItemByCategoryAsync(category);
+    }
+
+    async Task DeleteItemTable(ItemTable itemTable, string category)
+    {
+        ShowPopup = false;
+        var user = (await authenticationStateTask).User;
+        var result = @Service.DeleteItemAsync(itemTable);
+        itemsList =
+        await @Service.GetItemByCategoryAsync(category);
+    }
+
+    void OpenItem(ItemTable itemTable, int i, string description, string category, string name)
+    {
+        ItemTableService.Description = description;
+        ItemTableService.Number = i;
+        ItemTableService.Category = category;
+        ItemTableService.Name = name;
+        objItemTable = itemTable;
+        NavigationManager.NavigateTo("itempage");
+
+    }
+}

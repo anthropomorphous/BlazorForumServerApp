@@ -1,0 +1,347 @@
+﻿@page "/sportpage"
+@using System.IO
+@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Identity;
+@using System.Collections;
+@using BlazorServerApp.Data
+@using BlazorServerAppDB.Data.BlazorServerApp
+@using Microsoft.Extensions.Logging
+@using Radzen
+@using Radzen.Blazor
+@inject ILogger<ItemsPage> logger
+@inject Data.ItemTableService ItemTableService
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment HostEnvironment
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inherits OwningComponentBase<ItemTableService>
+
+
+<h1>Спортивные товары</h1>
+<br />
+<AuthorizeView>
+    <Authorized>
+        <div class="main">
+            <ul class="pizza-cards">
+                @if (itemsList != null)
+                {
+                    @foreach (var item in itemsList)
+                    {
+                        <li style="background-image: url('@item.ImageUrl')">
+                            <div class="pizza-info">
+                                <span class="title">@item.ItemName</span>
+                                @item.Description
+                                <span>@item.Category</span>
+                            </div>
+                        </li>
+                    }
+                }
+            </ul>
+        </div>
+        <p>
+            <button class="btn btn-primary" style=" background-color: #4CAF50;"
+                    @onclick="AddNewItemTable">
+                Добавить продукт
+            </button>
+        </p>
+        @if (@context.User.IsInRole(ADMINISTRATION_ROLE))
+        {
+            <div class="row">
+                <div class="col-md-4" style="margin-bottom: 16px">
+                    <RadzenTree Change="@LogChange" Data="@Directories"
+                                Expand="@LoadDirectory"
+                                Style="width: 100%; height: 300px">
+                        <RadzenTreeLevel Text="@GetTextForNode"
+                                         Template="@FileOrFolderTemplate" />
+                    </RadzenTree>
+                </div>
+                <div class="col-md-8" style="margin-bottom: 16px">
+                    <RadzenDataList WrapItems="true" AllowPaging="true"
+                                    Data="@Files" TItem="FileObject">
+                        <Template Context="file">
+                            @if (file.FileName == SelectedFile.FileName)
+                            {
+                                <RadzenImage Path="@file.FilePath"
+                                             Style="width:100px;
+                                        padding:10px;
+                                        background-color:darkgrey"
+                                             Click="@((args) => SelectImage(file))" />
+                            }
+                            else
+                            {
+                                <RadzenImage Path="@file.FilePath"
+                                             Style="width: 100px;
+                                        padding: 10px;
+                                        background-color: white"
+                                             Click="@((args) => SelectImage(file))" />
+                            }
+                        </Template>
+                    </RadzenDataList>
+                </div>
+            </div>
+            @if (ShowPopup)
+            {
+                <div class="modal" tabindex="-1" style="display:block" role="dialog">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3 class="modal-title">Изменить</h3>
+                                <button type="button" class="close"
+                                        @onclick="ClosePopup">
+                                    <span aria-hidden="true">X</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <input class="form-control" type="text"
+                                       placeholder="Продукт"
+                                       @bind="objItemTable.ItemName" />
+                                <br />
+                                <input class="form-control" type="text"
+                                       placeholder="Описание"
+                                       @bind="objItemTable.Description" />
+                                <br />
+                                <input class="form-control" type="text"
+                                       placeholder="Image URL"
+                                       @bind="objItemTable.ImageUrl" />
+                                <br />
+                                <RadzenUpload ChooseText="Upload Files" Multiple="true"
+                                              Accept="image/*"
+                                              Url=@($"/api/upload/multiple?CurrentDirectory={CurrentDirectory}")
+                                              Style="margin-bottom: 20px;height: 45px"
+                                              Progress="@((args) => OnProgress(args))" />
+                                <div align="center">
+                                    <RadzenProgressBar Value="@progress"
+                                                       Unit="@info"
+                                                       Visible="@(progress > 0)"
+                                                       Style="margin-bottom: 20px" />
+                                </div>
+                                <button class="btn btn-primary"
+                                        @onclick="SaveItemTable">
+                                    Сохранить
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <p>You're not signed in as a user in @ADMINISTRATION_ROLE.</p>
+        }
+
+    </Authorized>
+    <NotAuthorized>
+        <p>You're not logged in.</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    string ADMINISTRATION_ROLE = "Administrators";
+    bool ShowPopup = false;
+    bool ShowFolderPopup = false;
+    int progress;
+    string info;
+    string CurrentDirectory = "";
+    string CurrentRoot = "";
+    string NewFolderName = "";
+    FileObject SelectedFile = new FileObject();
+    List<string> Directories = new List<string>();
+    List<FileObject> Files = new List<FileObject>();
+    Dictionary<DateTime, string> events = new Dictionary<DateTime, string>();
+    //private Task<AuthenticationState> authenticationStateTask { get; set; }
+    List<ItemTable> itemsList;
+
+
+    int categoryId = 1;
+    string category = "Спорт";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = (await authenticationStateTask).User;
+
+        try
+        {
+            itemsList = await @Service.GetItemByCategoryAsync(ItemTableService.Category);
+
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, e.Message);
+        }
+
+    }
+
+    ItemTable objItemTable = new ItemTable();
+    CategoryTable objCategoryTable = new CategoryTable();
+
+
+    void ClosePopup()
+    {
+        ShowPopup = false;
+    }
+
+    void AddNewItemTable()
+    {
+        objItemTable = new ItemTable();
+        objItemTable.Id = 0;
+        ShowPopup = true;
+    }
+
+    async Task SaveItemTable()
+    {
+
+        ShowPopup = false;
+        var user = (await authenticationStateTask).User;
+        if (objItemTable.Id == 0)
+        {
+            ItemTable objNewItemTable = new ItemTable();
+
+            objNewItemTable.Date = System.DateTime.Now;
+
+            objNewItemTable.Category = category;
+
+            objNewItemTable.UserName = user.Identity.Name;
+
+            objNewItemTable.ItemName = objItemTable.ItemName;
+
+            objNewItemTable.Description = objItemTable.Description;
+
+            objNewItemTable.ImageUrl = objItemTable.ImageUrl;
+
+            objNewItemTable.CategoryId = categoryId;
+
+            var result =
+            @Service.CreateItemAsync(objNewItemTable);
+        }
+        else
+        {
+            var result =
+            @Service.UpdateItemAsync(objItemTable);
+        }
+
+        itemsList =
+        await @Service.GetItemByCategoryAsync(ItemTableService.Category);
+    }
+
+    async Task DeleteItemTable(ItemTable itemTable, string category)
+    {
+        ShowPopup = false;
+        var user = (await authenticationStateTask).User;
+        var result = @Service.DeleteItemAsync(itemTable);
+        itemsList =
+        await @Service.GetItemByCategoryAsync(category);
+    }
+
+    protected override void OnInitialized()
+    {
+        CurrentRoot =
+            Path.Combine(HostEnvironment.WebRootPath, "uploads");
+        CurrentDirectory = CurrentRoot;
+        Directories.Add(CurrentDirectory);
+        LoadFiles();
+    }
+
+    void SelectImage(FileObject file)
+    {
+        if (SelectedFile.FileName == file.FileName)
+        {
+            SelectedFile = new FileObject();
+        }
+        else
+        {
+            SelectedFile = file;
+        }
+    }
+
+    void LogChange(TreeEventArgs args)
+    {
+        CurrentDirectory = args.Value as string;
+        LoadFiles();
+    }
+
+    string GetTextForNode(object data)
+    {
+        return Path.GetFileName((string)data);
+    }
+
+    RenderFragment<RadzenTreeItem>
+        FileOrFolderTemplate = (context) => builder =>
+        {
+            string path = context.Value as string;
+            bool isDirectory = Directory.Exists(path);
+            builder.OpenComponent<RadzenIcon>(0);
+            builder.AddAttribute(1,
+                    "Icon", isDirectory ? "folder" :
+                    "insert_drive_file");
+            if (!isDirectory)
+            {
+                builder.AddAttribute(2,
+                        "Style",
+                        "margin-left: 24px");
+            }
+            builder.CloseComponent();
+            builder.AddContent(3, context.Text);
+        };
+    void LoadDirectory(TreeExpandEventArgs args)
+    {
+        CurrentDirectory = args.Value as string;
+        // Only get the folders not the files
+        args.Children.Data =
+            Directory.EnumerateFileSystemEntries(CurrentDirectory)
+            .Where(x => !x.Contains("."));
+        args.Children.Text = GetTextForNode;
+        args.Children.HasChildren =
+            (path) => Directory.Exists((string)path);
+        args.Children.Template = FileOrFolderTemplate;
+    }
+    void LoadFiles()
+    {
+        Files = new List<FileObject>();
+        var FileNames =
+            Directory.EnumerateFileSystemEntries(CurrentDirectory)
+            .Where(x => x.Contains("."));
+        foreach (var item in FileNames)
+        {
+            Files.Add(new FileObject()
+            {
+                FileName =
+                Path.GetFileName(item),
+                FilePath =
+                item.Replace(HostEnvironment.WebRootPath, "")
+            });
+        }
+        // Reset selected file
+        SelectedFile = new FileObject();
+        // Update UI
+        StateHasChanged();
+    }
+
+    async void OnProgress(UploadProgressArgs args)
+    {
+        ShowPopup = true;
+        this.info = $"{args.Loaded} of {args.Total} bytes.";
+        this.progress = args.Progress;
+        StateHasChanged();
+        if (args.Loaded == args.Total)
+        {
+            // Delay to give files time to be saved
+            // before reloading file view
+            await LoadFilesAsync();
+        }
+    }
+    public async Task LoadFilesAsync()
+    {
+        int Time = 1;
+        while (Time > 0)
+        {
+            Time--;
+            StateHasChanged();
+            await Task.Delay(1000);
+        }
+        ShowPopup = false;
+        LoadFiles();
+    }
+}

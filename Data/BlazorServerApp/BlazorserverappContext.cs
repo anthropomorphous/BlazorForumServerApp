@@ -16,6 +16,8 @@ namespace BlazorServerAppDB.Data.BlazorServerApp
         {
         }
 
+        public virtual DbSet<CategoryTable> CategoryTable { get; set; }
+        public virtual DbSet<ItemTable> ItemTable { get; set; }
         public virtual DbSet<MessageTable> MessageTable { get; set; }
         public virtual DbSet<ThemeTable> ThemeTable { get; set; }
 
@@ -28,6 +30,30 @@ namespace BlazorServerAppDB.Data.BlazorServerApp
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<CategoryTable>(entity =>
+            {
+                entity.Property(e => e.CategoryName).HasMaxLength(50);
+
+                entity.Property(e => e.Date).HasColumnType("datetime");
+
+                entity.Property(e => e.UserName).HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<ItemTable>(entity =>
+            {
+                entity.Property(e => e.Category).HasMaxLength(50);
+
+                entity.Property(e => e.Date).HasColumnType("datetime");
+
+                entity.Property(e => e.Description).HasMaxLength(50);
+
+                entity.Property(e => e.ImageUrl).HasMaxLength(50);
+
+                entity.Property(e => e.ItemName).HasMaxLength(50);
+
+                entity.Property(e => e.UserName).HasMaxLength(50);
+            });
+
             modelBuilder.Entity<MessageTable>(entity =>
             {
                 entity.Property(e => e.Date).HasColumnType("datetime");
@@ -39,6 +65,8 @@ namespace BlazorServerAppDB.Data.BlazorServerApp
 
             modelBuilder.Entity<ThemeTable>(entity =>
             {
+                entity.Property(e => e.CategoryName).HasMaxLength(50);
+
                 entity.Property(e => e.Date).HasColumnType("datetime");
 
                 entity.Property(e => e.ThemeName).HasMaxLength(50);

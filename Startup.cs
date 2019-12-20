@@ -40,7 +40,7 @@ namespace BlazorServerApp
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
                    Configuration.GetConnectionString("DefaultConnection")));
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddRazorPages();
@@ -49,8 +49,8 @@ namespace BlazorServerApp
                 // Password settings.
                 options.Password.RequireDigit = true;
                 options.Password.RequireLowercase = true;
-                options.Password.RequireNonAlphanumeric = true;
-                options.Password.RequireUppercase = true;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
                 options.Password.RequiredLength = 6;
                 options.Password.RequiredUniqueChars = 1;
 
@@ -63,6 +63,7 @@ namespace BlazorServerApp
                 options.User.AllowedUserNameCharacters =
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
                 options.User.RequireUniqueEmail = false;
+               
             });
 
             services.ConfigureApplicationCookie(options =>
@@ -81,10 +82,10 @@ namespace BlazorServerApp
            
             // Scoped creates an instance for each user
             services.AddScoped<ThemeTableService>();
-
             services.AddScoped<MessageTableService>();
-
             services.AddScoped<EmailService>();
+            services.AddScoped<ItemTableService>();
+            services.AddScoped<CategoryTableService>();
 
             // Read the connection string from the appsettings.json file
             // Set the database connection for the BlazorServerAppContext
@@ -114,10 +115,12 @@ namespace BlazorServerApp
             else
             {
                 app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
+            // обработка ошибок HTTP
+            app.UseStatusCodePagesWithReExecute("/error", "?code={0}");
+            //app.UseStatusCodePages("text/plain", "Error {0}");
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();

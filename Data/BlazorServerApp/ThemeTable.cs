@@ -10,5 +10,6 @@ namespace BlazorServerAppDB.Data.BlazorServerApp
         public DateTime? Date { get; set; }
         public string ThemeName { get; set; }
         public string UserName { get; set; }
+        public string CategoryName { get; set; }
     }
 }

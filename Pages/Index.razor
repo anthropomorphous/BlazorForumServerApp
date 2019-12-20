@@ -1,11 +1,12 @@
 ﻿@page "/"
-@inject Data.ThemeTableService ThemeTableService
+@using BlazorAnimate
 
-<div>
-
-    <h1>Приветствуем на Биохакере!</h1>
-
+    <Animate Animation="Animations.FadeIn" Duration="TimeSpan.FromSeconds(0.5)" Delay="TimeSpan.FromSeconds(1)">
+        <h1>Приветствуем на Биохакере!</h1>
+    </Animate>
+    
+    <Animate Animation="Animations.ZoomIn" Duration="TimeSpan.FromSeconds(1)" Delay="TimeSpan.FromSeconds(1.5)">
         Самый классный форум, посвященный биопроблемам. Ага.
+    </Animate>
+        
 
-
-</div>

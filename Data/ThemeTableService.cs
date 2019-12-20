@@ -89,6 +89,18 @@ namespace BlazorServerApp.Data
             return Task.FromResult(colThemeTables);
         }
 
+        public Task<List<ThemeTable>>
+           GetThemeByCategoryAsync(string category)
+        {
+            List<ThemeTable> colThemeTables =
+                new List<ThemeTable>();
+            colThemeTables =
+                (from themeTable in _context.ThemeTable
+                 where themeTable.CategoryName == category
+                 select themeTable).ToList();
+            return Task.FromResult(colThemeTables);
+        }
+
 
         public Task<List<ThemeTable>>
             GetThemesAsync()

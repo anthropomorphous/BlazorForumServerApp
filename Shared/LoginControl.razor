@@ -28,9 +28,8 @@ else
         base.OnInitialized();
         try
         {
-            // Set the user to determine if they are logged in
             User = _httpContextAccessor.HttpContext.User;
-            // Try to get the GivenName
+     
             var givenName =
                 _httpContextAccessor.HttpContext.User
                 .FindFirst(ClaimTypes.GivenName);
@@ -42,7 +41,7 @@ else
             {
                 GivenName = User.Identity.Name;
             }
-            // Try to get the Surname
+ 
             var surname =
                 _httpContextAccessor.HttpContext.User
                 .FindFirst(ClaimTypes.Surname);
@@ -54,7 +53,7 @@ else
             {
                 Surname = "";
             }
-            // Try to get Avatar
+
             var avatar =
             _httpContextAccessor.HttpContext.User
             .FindFirst("urn:google:image");
