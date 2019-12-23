@@ -5,8 +5,7 @@
 
 @if (User.Identity.Name != null)
 {
-    <img src="@Avatar" />
-    <b>You are logged in as: @GivenName @Surname</b>
+    <b>Вы вошли как: @GivenName @Surname</b>
     <a class="ml-md-auto nav-link btn btn-link"
        href="/Logout"
        target="_top">Выйти (google)</a>
@@ -54,17 +53,7 @@ else
                 Surname = "";
             }
 
-            var avatar =
-            _httpContextAccessor.HttpContext.User
-            .FindFirst("urn:google:image");
-            if (avatar != null)
-            {
-                Avatar = avatar.Value;
-            }
-            else
-            {
-                Avatar = "";
-            }
+          
         }
         catch { }
     }

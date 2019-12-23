@@ -56,6 +56,8 @@ namespace BlazorServerAppDB.Data.BlazorServerApp
 
             modelBuilder.Entity<MessageTable>(entity =>
             {
+                entity.Property(e => e.CategoryName).HasMaxLength(50);
+
                 entity.Property(e => e.Date).HasColumnType("datetime");
 
                 entity.Property(e => e.Text).IsUnicode(false);

@@ -135,6 +135,8 @@ namespace BlazorServerApp.Data
                     objThemeTable.Date;
                 ExistingThemeTable.ThemeName =
                     objThemeTable.ThemeName;
+                ExistingThemeTable.CategoryName =
+                    objThemeTable.CategoryName;
                 _context.SaveChanges();
             }
             else

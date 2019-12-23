@@ -4,16 +4,25 @@ using System.Linq;
 using System.Threading.Tasks;
 using MimeKit;
 using MailKit.Net.Smtp;
+using Microsoft.Extensions.Configuration;
 
 namespace BlazorServerApp.Data
 {
     public class EmailService
     {
-        public async Task SendEmailAsync(string emailFrom, string password, string emailTo, string subject, string message)
+        public IConfiguration Configuration { get; }
+        public EmailService(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+        public async Task SendEmailAsync(string emailTo, string subject, string message)
         {
             var emailMessage = new MimeMessage();
 
-            emailMessage.From.Add(new MailboxAddress("BioHacker", emailFrom));
+            IConfigurationSection smtpSection =
+                Configuration.GetSection("Smtp");
+            
+            emailMessage.From.Add(new MailboxAddress("BioHacker", smtpSection["Email"]));
             emailMessage.To.Add(new MailboxAddress("Пользователь", emailTo));
             emailMessage.Subject = subject;
             emailMessage.Body = new TextPart(MimeKit.Text.TextFormat.Html)
@@ -23,8 +32,8 @@ namespace BlazorServerApp.Data
 
             using (var client = new SmtpClient())
             {
-                await client.ConnectAsync("smtp.mail.ru", 25, false);
-                await client.AuthenticateAsync(emailFrom, password);
+                await client.ConnectAsync(smtpSection["SmtpProtocol"], 25, false);
+                await client.AuthenticateAsync(smtpSection["Email"], smtpSection["Password"]);
                 await client.SendAsync(emailMessage);
 
                 await client.DisconnectAsync(true);

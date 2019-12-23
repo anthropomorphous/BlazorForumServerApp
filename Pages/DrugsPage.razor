@@ -1,55 +1,57 @@
 ﻿@page "/drugspage"
-@using System.IO
-@using Microsoft.AspNetCore.Authorization;
-@using Microsoft.AspNetCore.Identity;
-@using System.Collections;
 @using BlazorServerApp.Data
 @using BlazorServerAppDB.Data.BlazorServerApp
 @using Microsoft.Extensions.Logging
-@using Radzen
-@using Radzen.Blazor
 @inject NavigationManager NavigationManager
-@inject ILogger<ItemsPage> logger
-@inject Data.ItemTableService ItemTableService
-@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment HostEnvironment
+@inject Data.ThemeTableService ThemeTableService
+@inject ILogger<DrugsPage> logger
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@inherits OwningComponentBase<ItemTableService>
-
-<h1>Фармацевтика</h1>
-<br />
+@inherits OwningComponentBase<ThemeTableService>
+<h1>Уходовые средства</h1>
 
 <AuthorizeView>
     <Authorized>
-        <div class="main">
-            @if (itemsList != null)
-            {
-                @foreach (var item in itemsList)
-                {
-                    <div class="card" style="width: 18rem;">
-                        <img class="card-img-top" src="~/Images/accountimg.png" alt="Card image cap">
-                        <div class="card-body">
-                            <h5 class="card-title">@item.ItemName</h5>
-                            <p class="card-text">@item.Description</p>
-                        </div>
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item">@item.Category</li>
-                        </ul>
-                        <div class="card-body">
-                            <a href="itempage" class="card-link">Открыть</a>
-                            <a href="#" class="card-link">Удалить</a>
-                        </div>
-                    </div>
-                    <br />
-                }
-            }
-        </div>
-
-        @if (@context.User.IsInRole(ADMINISTRATION_ROLE))
+        @if (themes == null)
         {
+            <p><em>Загрузка...</em></p>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Theme</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var theme in themes)
+                    {
+                        <tr>
+                            <td>@theme.Date.Value.ToShortDateString()</td>
+                            <td>@theme.ThemeName</td>
+                            <td>
+                                <button class="btn btn-primary" style="background-color: #4CAF50;"
+                                        @onclick="(() => EditTheme(theme))">
+                                    Edit
+                                </button>
+                            </td>
+                            <td>
+                                <button class="btn btn-primary" style="background-color: #4CAF50;"
+                                        @onclick="(() => OpenTheme(theme, theme.Id, theme.CategoryName))">
+                                    Открыть
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
             <p>
-                <button class="btn btn-primary" style=" background-color: #4CAF50;"
-                        @onclick="AddNewItemTable">
-                    Добавить продукт
+                <button class="btn btn-primary" style="background-color: #4CAF50;"
+                        @onclick="AddNewTheme">
+                    Добавить тему
                 </button>
             </p>
             @if (ShowPopup)
@@ -66,134 +68,108 @@
                             </div>
                             <div class="modal-body">
                                 <input class="form-control" type="text"
-                                       placeholder="Продукт"
-                                       @bind="objItemTable.ItemName" />
+                                       placeholder="Тема"
+                                       @bind="objThemeTable.ThemeName" />
                                 <br />
-                                <input class="form-control" type="text"
-                                       placeholder="Описание"
-                                       @bind="objItemTable.Description" />
-                                <br />
-                                <input class="form-control" type="text"
-                                       placeholder="Image URL"
-                                       @bind="objItemTable.ImageUrl" />
-                                <br />
-
-                                <div align="center">
-
-                                </div>
-                                <button class="btn btn-primary"
-                                        @onclick="SaveItemTable">
+                                <button class="btn btn-primary" style="background-color: #4CAF50;"
+                                        @onclick="SaveTheme">
                                     Сохранить
                                 </button>
+
+                                @if (objThemeTable.Id > 0)
+                                {
+                                    <button class="btn btn-primary" style="background-color: #4CAF50;"
+                                            @onclick="DeleteTheme">
+                                        Удалить
+                                    </button>
+                                }
                             </div>
                         </div>
                     </div>
                 </div>
             }
+
         }
     </Authorized>
     <NotAuthorized>
-        <p>Войдите в свой аккаунт либо зарегистрируйтесь.</p>
+        <p>Вы не вошли в аккаунт.</p>
     </NotAuthorized>
 </AuthorizeView>
 
-@code{
+@code {
+
     [CascadingParameter]
     private Task<AuthenticationState> authenticationStateTask { get; set; }
-    string ADMINISTRATION_ROLE = "Administrators";
-    bool ShowPopup = false;
+    List<ThemeTable> themes;
 
-    List<ItemTable> itemsList;
-
-
-    int categoryId = 0;
     string category = "Фармацевтика";
 
     protected override async Task OnInitializedAsync()
     {
         var user = (await authenticationStateTask).User;
-
-        try
-        {
-            itemsList = await @Service.GetItemByCategoryAsync(category);
-
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, e.Message);
-        }
-
+        themes = await @Service.GetThemeByCategoryAsync(category);
     }
 
-    ItemTable objItemTable = new ItemTable();
-    CategoryTable objCategoryTable = new CategoryTable();
-
-
+    ThemeTable objThemeTable = new ThemeTable();
+    bool ShowPopup = false;
     void ClosePopup()
     {
         ShowPopup = false;
     }
-
-    void AddNewItemTable()
+    void AddNewTheme()
     {
-        objItemTable = new ItemTable();
-        objItemTable.Id = 0;
+        objThemeTable = new ThemeTable();
+        objThemeTable.Id = 0;
         ShowPopup = true;
     }
-
-    async Task SaveItemTable()
+    async Task SaveTheme()
     {
-
         ShowPopup = false;
         var user = (await authenticationStateTask).User;
-        if (objItemTable.Id == 0)
+        if (objThemeTable.Id == 0)
         {
-            ItemTable objNewItemTable = new ItemTable();
-
-            objNewItemTable.Date = System.DateTime.Now;
-
-            objNewItemTable.ItemName = objItemTable.ItemName;
-
-            objNewItemTable.CategoryId = categoryId;
-
-            objNewItemTable.UserName = user.Identity.Name;
-
-            objNewItemTable.Description = objItemTable.Description;
-
-            objNewItemTable.ImageUrl = objItemTable.ImageUrl;
-
-            objNewItemTable.Category = category;
+            ThemeTable objNewThemeTable = new ThemeTable();
+            objNewThemeTable.Date = System.DateTime.Now;
+            objNewThemeTable.ThemeName = objThemeTable.ThemeName;
+            objNewThemeTable.UserName = user.Identity.Name;
+            objNewThemeTable.CategoryName = category;
 
             var result =
-            @Service.CreateItemAsync(objNewItemTable);
+            @Service.CreateThemeAsync(objNewThemeTable);
         }
         else
         {
             var result =
-            @Service.UpdateItemAsync(objItemTable);
+            @Service.UpdateThemeAsync(objThemeTable);
         }
 
-        itemsList =
-        await @Service.GetItemByCategoryAsync(category);
+        themes =
+        await @Service.GetThemeByCategoryAsync(category);
+
     }
 
-    async Task DeleteItemTable(ItemTable itemTable, string category)
+    void EditTheme(ThemeTable themeTable)
+    {
+        objThemeTable = themeTable;
+        ShowPopup = true;
+    }
+
+    void OpenTheme(ThemeTable themeTable, int i, string name)
+    {
+        ThemeTableService.Name = name;
+        ThemeTableService.Number = i;
+        objThemeTable = themeTable;
+        NavigationManager.NavigateTo("messagepage");
+        logger.LogInformation("Processing request from DrugsPage");
+
+    }
+
+    async Task DeleteTheme()
     {
         ShowPopup = false;
         var user = (await authenticationStateTask).User;
-        var result = @Service.DeleteItemAsync(itemTable);
-        itemsList =
-        await @Service.GetItemByCategoryAsync(category);
-    }
-
-    void OpenItem(ItemTable itemTable, int i, string description, string category, string name)
-    {
-        ItemTableService.Description = description;
-        ItemTableService.Number = i;
-        ItemTableService.Category = category;
-        ItemTableService.Name = name;
-        objItemTable = itemTable;
-        NavigationManager.NavigateTo("itempage");
-
+        var result = @Service.DeleteThemeAsync(objThemeTable);
+        themes =
+        await @Service.GetThemeByCategoryAsync(category);
     }
 }

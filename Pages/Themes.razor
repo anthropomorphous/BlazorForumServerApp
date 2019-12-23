@@ -35,7 +35,6 @@
         }
         else
         {
-            <!-- Show the forecasts for the current user -->
             <table class="table">
                 <thead>
                     <tr>
@@ -54,13 +53,13 @@
                             <td>@theme.ThemeName </td>
                             <td>@theme.UserName</td>
                             <td>
-                                <button class="btn btn-primary"
+                                <button class="btn btn-primary" style="background-color: #4CAF50;"
                                         @onclick="(() => OpenTheme(theme, theme.Id, theme.ThemeName))">
                                     Открыть
                                 </button>
                             </td>
                             <td>
-                                <button class="btn btn-primary"
+                                <button class="btn btn-primary" style="background-color: #4CAF50;"
                                         @onclick="(() => EditTheme(theme))">
                                     Редактировать
                                 </button>
@@ -71,9 +70,9 @@
             </table>
             <p>
                 <!-- Add a new theme -->
-                <button class="btn btn-primary"
+                <button class="btn btn-primary" style="background-color: #4CAF50;"
                         @onclick="AddNewTheme">
-                    Add New Theme
+                    Добавить тему
                 </button>
             </p>
             @if (ShowPopup)
@@ -97,9 +96,9 @@
                                        @bind="objThemeTable.ThemeName" />
                                 <br />
                                 <!-- Button to save the theme -->
-                                <button class="btn btn-primary"
+                                <button class="btn btn-primary" style="background-color: #4CAF50;"
                                         @onclick="SaveTheme">
-                                    Save
+                                    Сохранить
                                 </button>
 
                                 <!-- Only show delete button if not a new record -->
@@ -138,11 +137,7 @@
     List<ThemeTable> themes;
     protected override async Task OnInitializedAsync()
     {
-        // Get the current user
         var user = (await authenticationStateTask).User;
-        // Get all the themes
-        // We access ThemeTableService using @Service
-        // And pick (probably ok) not only the 4 theme
         themes = await @Service.GetThemesAsync();
     }
 
@@ -165,11 +160,8 @@
     }
     async Task SaveTheme()
     {
-        // Close the Popup
         ShowPopup = false;
-        // Get the current user
         var user = (await authenticationStateTask).User;
-        // A new theme will have the Id set to 0
         if (objThemeTable.Id == 0)
         {
             // Create new theme
@@ -216,13 +208,9 @@
 
     async Task DeleteTheme()
     {
-        // Close the Popup
         ShowPopup = false;
-        // Get the current user
         var user = (await authenticationStateTask).User;
-        // Delete the theme
         var result = @Service.DeleteThemeAsync(objThemeTable);
-        // Get the themes for the current user
         themes =
         await @Service.GetThemeAsync(user.Identity.Name);
     }

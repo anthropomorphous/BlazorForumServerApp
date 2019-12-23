@@ -77,6 +77,16 @@ namespace BlazorServerApp
                 options.SlidingExpiration = true;
             });
 
+            services.AddAuthentication()
+         .AddGoogle(options =>
+         {
+             IConfigurationSection googleAuthNSection =
+                 Configuration.GetSection("Authentication:Google");
+
+             options.ClientId = googleAuthNSection["ClientId"];
+             options.ClientSecret = googleAuthNSection["ClientSecret"];
+         });
+
             services.AddServerSideBlazor();
             services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
            
@@ -100,7 +110,7 @@ namespace BlazorServerApp
             services.AddScoped<HttpContextAccessor>();
             services.AddHttpClient();
             services.AddScoped<HttpClient>();
-            services.AddSingleton<IConfiguration>(Configuration);
+            //services.AddSingleton<IConfiguration>(Configuration);
 
         }
 

@@ -1,10 +1,16 @@
 ﻿@page "/techpage"
 @using BlazorServerApp.Data
 @using BlazorServerAppDB.Data.BlazorServerApp
+@using Microsoft.Extensions.Logging
+@inject NavigationManager NavigationManager
+@inject Data.ThemeTableService ThemeTableService
+@inject ILogger<TechPage> logger
 @inject AuthenticationStateProvider AuthenticationStateProvider
-
 @inherits OwningComponentBase<ThemeTableService>
+
+
 <h1>Техника</h1>
+<br />
 
 <AuthorizeView>
     <Authorized>
@@ -20,6 +26,7 @@
                         <th>Date</th>
                         <th>Theme</th>
                         <th></th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -29,9 +36,15 @@
                             <td>@theme.Date.Value.ToShortDateString()</td>
                             <td>@theme.ThemeName</td>
                             <td>
-                                <button class="btn btn-primary"
+                                <button class="btn btn-primary" style="background-color: #4CAF50;"
                                         @onclick="(() => EditTheme(theme))">
                                     Edit
+                                </button>
+                            </td>
+                            <td>
+                                <button class="btn btn-primary" style="background-color: #4CAF50;"
+                                        @onclick="(() => OpenTheme(theme, theme.Id, theme.CategoryName))">
+                                    Открыть
                                 </button>
                             </td>
                         </tr>
@@ -39,7 +52,7 @@
                 </tbody>
             </table>
             <p>
-                <button class="btn btn-primary"
+                <button class="btn btn-primary" style="background-color: #4CAF50;"
                         @onclick="AddNewTheme">
                     Добавить тему
                 </button>
@@ -61,14 +74,14 @@
                                        placeholder="Тема"
                                        @bind="objThemeTable.ThemeName" />
                                 <br />
-                                <button class="btn btn-primary"
+                                <button class="btn btn-primary" style="background-color: #4CAF50;"
                                         @onclick="SaveTheme">
                                     Сохранить
                                 </button>
 
                                 @if (objThemeTable.Id > 0)
                                 {
-                                    <button class="btn btn-primary"
+                                    <button class="btn btn-primary" style="background-color: #4CAF50;"
                                             @onclick="DeleteTheme">
                                         Удалить
                                     </button>
@@ -142,6 +155,16 @@
     {
         objThemeTable = themeTable;
         ShowPopup = true;
+    }
+
+    void OpenTheme(ThemeTable themeTable, int i, string name)
+    {
+        ThemeTableService.Name = name;
+        ThemeTableService.Number = i;
+        objThemeTable = themeTable;
+        NavigationManager.NavigateTo("messagepage");
+        logger.LogInformation("Processing request from TechPage");
+
     }
 
     async Task DeleteTheme()

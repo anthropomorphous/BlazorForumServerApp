@@ -31,21 +31,11 @@
 
         <div>
             <div>
-                Ваша почта:
+                Почта:
                 <input class="my-input form-control"
                        type="text"
                        name="customerEmail"
-                       placeholder="Ваш Email"
-                       @bind="eMailFrom" />
-            </div>
-            <br />
-
-            <div>
-                Ваш пароль:
-                <input class="my-input form-control"
-                       type="password" name="password"
-                       placeholder="Ваш пароль"
-                       @bind="password" />
+                       placeholder="blazor.2020@mail.ru" />
             </div>
             <br />
 
@@ -56,6 +46,17 @@
                            typeof="text"
                            placeholder="Email участника"
                            @bind="eMailTo" />
+                </span>
+            </div>
+            <br />
+
+            <div>
+                <span>
+                    Получатель:
+                    <input class="my-input form-control"
+                           typeof="text"
+                           placeholder="Тема"
+                           @bind="subject" />
                 </span>
             </div>
             <br />
@@ -73,7 +74,7 @@
             </div>
             <br />
 
-            <button class="btn btn-primary"
+            <button class="btn btn-primary" style="background-color: #4CAF50;"
                     @onclick="SendMail">
                 Отправить
             </button>
@@ -106,16 +107,13 @@
     [CascadingParameter]
     private Task<AuthenticationState> authenticationStateTask { get; set; }
 
-    string eMailFrom = "";
     string subject = "";
     string message = "";
-    string password = "";
     string eMailTo = "";
 
     protected override async Task OnInitializedAsync()
     {
         var user = (await authenticationStateTask).User;
-        eMailFrom = user.Identity.Name;
     }
 
     bool ShowPopup = false;
@@ -129,9 +127,7 @@
     {
 
         var result =
-           @Service.SendEmailAsync(eMailFrom, password, eMailTo, subject, message);
-
-        logger.LogInformation("Сообщение отправлено");
+           @Service.SendEmailAsync(eMailTo, subject, message);
 
         ShowPopup = true;
     }
